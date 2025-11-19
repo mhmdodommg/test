@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة مهامي</title>
+    <script src="https://unpkg.com/@supabase/supabase-js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 500px; 
+            margin: 50px auto; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        input, button { 
+            padding: 10px; 
+            margin: 5px; 
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            cursor: pointer;
+        }
+        .todo-item { 
+            background: #f9f9f9; 
+            padding: 10px; 
+            margin: 5px 0; 
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .completed { 
+            text-decoration: line-through; 
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 قائمة مهامي</h1>
+        
+        <div>
+            <input type="text" id="taskInput" placeholder="أضف مهمة جديدة...">
+            <button onclick="addTask()">إضافة</button>
+        </div>
+
+        <div id="todosList"></div>
+    </div>
+
+    <script>
+        // 🔥 البيانات دي من مشروعك - مظبوطة!
+        const supabaseUrl = 'https://zvxnihydqpcabeozdpel.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2eG5paHlkcXBjYWJlb3pkcGVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1MTM0MjksImV4cCI6MjA3OTA4OTQyOX0.Ri8lTJWYGwjb-4GB7ehpD0FR3S6MXRchqnomZbmMnD0';
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // 🔄 جلب جميع المهام
+        async function loadTasks() {
+            const { data: todos, error } = await supabase
+                .from('todos')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error:', error);
+                alert('خطأ في جلب المهام: ' + error.message);
+                return;
+            }
+
+            displayTasks(todos);
+        }
+
+        // 🎯 عرض المهام في الصفحة
+        function displayTasks(todos) {
+            const todosList = document.getElementById('todosList');
+            todosList.innerHTML = '';
+
+            if (todos.length === 0) {
+                todosList.innerHTML = '<p style="text-align: center; color: #666;">لا توجد مهام حالياً</p>';
+                return;
+            }
+
+            todos.forEach(todo => {
+                const todoElement = document.createElement('div');
+                todoElement.className = `todo-item ${todo.is_completed ? 'completed' : ''}`;
+                
+                todoElement.innerHTML = `
+                    <span>${todo.task}</span>
+                    <div>
+                        <button onclick="toggleTask(${todo.id}, ${!todo.is_completed})">
+                            ${todo.is_completed ? '❌ إلغاء' : '✅ إكمال'}
+                        </button>
+                        <button onclick="deleteTask(${todo.id})" style="background: #dc3545;">🗑️ حذف</button>
+                    </div>
+                `;
+                
+                todosList.appendChild(todoElement);
+            });
+        }
+
+        // ➕ إضافة مهمة جديدة
+        async function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const task = taskInput.value.trim();
+
+            if (!task) {
+                alert('اكتب المهمة أولاً!');
+                return;
+            }
+
+            const { error } = await supabase
+                .from('todos')
+                .insert([{ task: task }]);
+
+            if (error) {
+                console.error('Error:', error);
+                alert('حدث خطأ في الإضافة: ' + error.message);
+                return;
+            }
+
+            taskInput.value = '';
+            loadTasks(); // إعادة تحميل المهام
+            alert('تم إضافة المهمة بنجاح! ✅');
+        }
+
+        // ✅ ❌ تبديل حالة المهمة
+        async function toggleTask(id, isCompleted) {
+            const { error } = await supabase
+                .from('todos')
+                .update({ is_completed: isCompleted })
+                .eq('id', id);
+
+            if (error) {
+                console.error('Error:', error);
+                alert('خطأ في التحديث: ' + error.message);
+                return;
+            }
+
+            loadTasks();
+        }
+
+        // 🗑️ حذف مهمة
+        async function deleteTask(id) {
+            if (!confirm('متأكد تريد حذف هذه المهمة؟')) return;
+
+            const { error } = await supabase
+                .from('todos')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                console.error('Error:', error);
+                alert('خطأ في الحذف: ' + error.message);
+                return;
+            }
+
+            loadTasks();
+            alert('تم حذف المهمة بنجاح! 🗑️');
+        }
+
+        // ⚡ تحميل المهام عند فتح الصفحة
+        loadTasks();
+
+        // 🔊 إضافة إمكانية الإدخال بالزر Enter
+        document.getElementById('taskInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+    </script>
+</body>
+  </html>
