@@ -1,42 +1,292 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar">
 <head>
-    <title>Test Supabase</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة مهامي</title>
     <script src="https://unpkg.com/@supabase/supabase-js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { 
+            background: white; 
+            max-width: 600px; 
+            margin: 0 auto;
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        #taskInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        #taskInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button { 
+            padding: 15px 25px; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #667eea; 
+            color: white; 
+        }
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .todo-item { 
+            background: #f8f9fa; 
+            padding: 20px; 
+            margin: 15px 0; 
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid #667eea;
+            transition: all 0.3s;
+        }
+        .todo-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .completed { 
+            text-decoration: line-through; 
+            opacity: 0.6;
+            border-left-color: #28a745;
+        }
+        .todo-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .empty-state {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px;
+            font-size: 18px;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+    </style>
 </head>
 <body>
-    <h1>تجربة اتصال Supabase</h1>
-    <button onclick="testConnection()">تجربة الاتصال</button>
-    <div id="result"></div>
+    <div class="container">
+        <h1>📝 قائمة مهامي</h1>
+        
+        <div class="input-group">
+            <input type="text" id="taskInput" placeholder="ما هي المهمة الجديدة؟" autocomplete="off">
+            <button class="btn-primary" onclick="addTask()">إضافة المهمة</button>
+        </div>
+
+        <div id="todosList">
+            <div class="empty-state">🚀 ابدأ بإضافة مهمة جديدة!</div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalTasks">0</div>
+                <div>المهام الكلية</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="completedTasks">0</div>
+                <div>المكتملة</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="pendingTasks">0</div>
+                <div>المعلقة</div>
+            </div>
+        </div>
+    </div>
 
     <script>
+        // 🔥 بيانات Supabase - من مشروعك
         const supabaseUrl = 'https://zvxnihydqpcabeozdpel.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2eG5paHlkcXBjYWJlb3pkcGVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1MTM0MjksImV4cCI6MjA3OTA4OTQyOX0.Ri8lTJWYGwjb-4GB7ehpD0FR3S6MXRchqnomZbmMnD0';
         
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function testConnection() {
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = 'جاري الاختبار...';
-            
-            try {
-                // جرب نجيب البيانات
-                const { data, error } = await supabase
-                    .from('todos')
-                    .select('*');
-                
-                if (error) {
-                    resultDiv.innerHTML = '❌ خطأ: ' + error.message;
-                    console.error('Error:', error);
-                } else {
-                    resultDiv.innerHTML = '✅ اتصال ناجح! عدد المهام: ' + data.length;
-                    console.log('Data:', data);
-                }
-            } catch (err) {
-                resultDiv.innerHTML = '❌ خطأ في الاتصال: ' + err.message;
-                console.error('Catch Error:', err);
+        // 🔄 جلب جميع المهام
+        async function loadTasks() {
+            const { data: todos, error } = await supabase
+                .from('todos')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error:', error);
+                return;
             }
+
+            displayTasks(todos);
+            updateStats(todos);
         }
+
+        // 🎯 عرض المهام في الصفحة
+        function displayTasks(todos) {
+            const todosList = document.getElementById('todosList');
+            
+            if (todos.length === 0) {
+                todosList.innerHTML = '<div class="empty-state">🚀 ابدأ بإضافة مهمة جديدة!</div>';
+                return;
+            }
+
+            todosList.innerHTML = '';
+            
+            todos.forEach(todo => {
+                const todoElement = document.createElement('div');
+                todoElement.className = `todo-item ${todo.is_completed ? 'completed' : ''}`;
+                
+                todoElement.innerHTML = `
+                    <div style="flex: 1;">
+                        <div style="font-size: 18px; margin-bottom: 5px;">${todo.task}</div>
+                        <div style="font-size: 12px; color: #666;">تم الإنشاء: ${new Date(todo.created_at).toLocaleString('ar-EG')}</div>
+                    </div>
+                    <div class="todo-actions">
+                        <button class="btn-${todo.is_completed ? 'secondary' : 'success'}" onclick="toggleTask(${todo.id}, ${!todo.is_completed})">
+                            ${todo.is_completed ? '↶ إلغاء' : '✓ إكمال'}
+                        </button>
+                        <button class="btn-danger" onclick="deleteTask(${todo.id})">🗑️ حذف</button>
+                    </div>
+                `;
+                
+                todosList.appendChild(todoElement);
+            });
+        }
+
+        // 📊 تحديث الإحصائيات
+        function updateStats(todos) {
+            const total = todos.length;
+            const completed = todos.filter(todo => todo.is_completed).length;
+            const pending = total - completed;
+
+            document.getElementById('totalTasks').textContent = total;
+            document.getElementById('completedTasks').textContent = completed;
+            document.getElementById('pendingTasks').textContent = pending;
+        }
+
+        // ➕ إضافة مهمة جديدة
+        async function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const task = taskInput.value.trim();
+
+            if (!task) {
+                alert('⚠️ من فضلك اكتب المهمة أولاً!');
+                return;
+            }
+
+            const { error } = await supabase
+                .from('todos')
+                .insert([{ task: task }]);
+
+            if (error) {
+                console.error('Error:', error);
+                alert('❌ حدث خطأ في إضافة المهمة: ' + error.message);
+                return;
+            }
+
+            taskInput.value = '';
+            loadTasks();
+        }
+
+        // ✅ ❌ تبديل حالة المهمة
+        async function toggleTask(id, isCompleted) {
+            const { error } = await supabase
+                .from('todos')
+                .update({ is_completed: isCompleted })
+                .eq('id', id);
+
+            if (error) {
+                console.error('Error:', error);
+                return;
+            }
+
+            loadTasks();
+        }
+
+        // 🗑️ حذف مهمة
+        async function deleteTask(id) {
+            if (!confirm('⚠️ هل أنت متأكد من حذف هذه المهمة؟')) return;
+
+            const { error } = await supabase
+                .from('todos')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                console.error('Error:', error);
+                return;
+            }
+
+            loadTasks();
+        }
+
+        // ⚡ تحميل المهام عند فتح الصفحة
+        loadTasks();
+
+        // 🔊 إضافة إمكانية الإدخال بالزر Enter
+        document.getElementById('taskInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        // 🎯 تحديث تلقائي كل 10 ثواني
+        setInterval(loadTasks, 10000);
     </script>
 </body>
-</html>
+                </html>
