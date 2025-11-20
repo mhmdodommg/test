@@ -3,244 +3,697 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قائمة مهامي</title>
+    <title>✨ قائمة مهامي المتطورة</title>
     <script src="https://unpkg.com/@supabase/supabase-js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        body { 
+
+        :root {
+            --primary: #667eea;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --dark: #343a40;
+            --light: #f8f9fa;
+        }
+
+        body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-            padding: 20px;
             min-height: 100vh;
+            padding: 20px;
         }
-        .container { 
-            background: white; 
-            max-width: 600px; 
+
+        .container {
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 30px; 
-            border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
-        h1 {
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), #5a67d8);
+            color: white;
+            padding: 30px;
             text-align: center;
-            color: #333;
-            margin-bottom: 30px;
+        }
+
+        .header h1 {
             font-size: 2.5em;
+            margin-bottom: 10px;
         }
-        .input-group {
+
+        .user-section {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
         }
-        #taskInput {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #ddd;
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            background: var(--light);
+            padding: 25px;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .filters h3, .categories h3 {
+            margin-bottom: 15px;
+            color: var(--dark);
+            font-size: 1.2em;
+        }
+
+        .filter-group, .category-list {
+            margin-bottom: 25px;
+        }
+
+        .filter-btn, .category-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 15px;
+            margin: 8px 0;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: right;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover, .category-btn:hover, .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .category-btn {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+
+        .content {
+            padding: 25px;
+        }
+
+        .add-task-form {
+            background: var(--light);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 150px 120px 100px;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group {
+            text-align: right;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
             border-radius: 10px;
             font-size: 16px;
             transition: border-color 0.3s;
         }
-        #taskInput:focus {
+
+        input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--primary);
         }
-        button { 
-            padding: 15px 25px; 
-            border: none; 
-            border-radius: 10px; 
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 600;
             transition: all 0.3s;
         }
+
         .btn-primary {
-            background: #667eea; 
-            color: white; 
+            background: var(--primary);
+            color: white;
         }
+
         .btn-primary:hover {
-            background: #5a6fd8;
+            background: #5a67d8;
             transform: translateY(-2px);
         }
-        .btn-success {
-            background: #28a745;
-            color: white;
+
+        .todos-container {
+            display: grid;
+            gap: 15px;
         }
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-        .todo-item { 
-            background: #f8f9fa; 
-            padding: 20px; 
-            margin: 15px 0; 
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
+
+        .todo-item {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 15px;
             align-items: center;
-            border-left: 5px solid #667eea;
             transition: all 0.3s;
         }
+
         .todo-item:hover {
-            transform: translateX(5px);
+            border-color: var(--primary);
+            transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-        .completed { 
-            text-decoration: line-through; 
-            opacity: 0.6;
-            border-left-color: #28a745;
+
+        .todo-item.completed {
+            opacity: 0.7;
+            border-color: var(--success);
         }
+
+        .todo-checkbox {
+            width: 25px;
+            height: 25px;
+            border: 2px solid #dee2e6;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .todo-checkbox.checked {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .todo-content {
+            text-align: right;
+        }
+
+        .todo-title {
+            font-size: 1.2em;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .todo-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .todo-badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .badge-priority-high { background: #fee; color: var(--danger); }
+        .badge-priority-medium { background: #fff3cd; color: #856404; }
+        .badge-priority-low { background: #e8f5e8; color: var(--success); }
+
+        .badge-category { background: #e7f3ff; color: var(--primary); }
+
         .todo-actions {
             display: flex;
             gap: 10px;
         }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .btn-edit { background: var(--warning); color: white; }
+        .btn-delete { background: var(--danger); color: white; }
+        .btn-icon:hover { transform: scale(1.1); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-total { color: var(--primary); }
+        .stat-completed { color: var(--success); }
+        .stat-pending { color: var(--warning); }
+        .stat-overdue { color: var(--danger); }
+
         .empty-state {
             text-align: center;
+            padding: 60px 20px;
             color: #6c757d;
-            padding: 40px;
-            font-size: 18px;
         }
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
+
+        .empty-state i {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
         }
-        .stat-item {
-            text-align: center;
+
+        /* تأثيرات للتاريخ المنقضي */
+        .todo-item.overdue {
+            border-color: var(--danger);
+            background: #fff5f5;
         }
-        .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
+
+        .overdue-badge {
+            background: var(--danger);
+            color: white;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📝 قائمة مهامي</h1>
-        
-        <div class="input-group">
-            <input type="text" id="taskInput" placeholder="ما هي المهمة الجديدة؟" autocomplete="off">
-            <button class="btn-primary" onclick="addTask()">إضافة المهمة</button>
+        <!-- الهيدر -->
+        <div class="header">
+            <h1><i class="fas fa-tasks"></i> قائمة مهامي المتطورة</h1>
+            <p>نظم مهامك بذكاء مع إمكانيات متقدمة</p>
+            <div class="user-section">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <div id="userName">مستخدم جديد</div>
+                    <div id="userStats" style="font-size: 0.9em; opacity: 0.8;">0 مهام</div>
+                </div>
+            </div>
         </div>
 
-        <div id="todosList">
-            <div class="empty-state">🚀 ابدأ بإضافة مهمة جديدة!</div>
-        </div>
+        <!-- المحتوى الرئيسي -->
+        <div class="main-content">
+            <!-- الشريط الجانبي -->
+            <div class="sidebar">
+                <div class="filters">
+                    <h3><i class="fas fa-filter"></i> التصفية</h3>
+                    <div class="filter-group">
+                        <button class="filter-btn active" onclick="setFilter('all')">
+                            <i class="fas fa-list"></i> جميع المهام
+                        </button>
+                        <button class="filter-btn" onclick="setFilter('pending')">
+                            <i class="fas fa-clock"></i> المعلقة
+                        </button>
+                        <button class="filter-btn" onclick="setFilter('completed')">
+                            <i class="fas fa-check"></i> المكتملة
+                        </button>
+                        <button class="filter-btn" onclick="setFilter('overdue')">
+                            <i class="fas fa-exclamation-triangle"></i> المتأخرة
+                        </button>
+                    </div>
+                </div>
 
-        <div class="stats">
-            <div class="stat-item">
-                <div class="stat-number" id="totalTasks">0</div>
-                <div>المهام الكلية</div>
+                <div class="categories">
+                    <h3><i class="fas fa-tags"></i> الفئات</h3>
+                    <div class="category-list" id="categoryList">
+                        <!-- الفئات تظهر هنا -->
+                    </div>
+                </div>
+
+                <div class="priority-filters">
+                    <h3><i class="fas fa-flag"></i> الأولوية</h3>
+                    <div class="filter-group">
+                        <button class="filter-btn" onclick="setPriorityFilter('all')">
+                            جميع الأولويات
+                        </button>
+                        <button class="filter-btn" onclick="setPriorityFilter('high')">
+                            <span style="color: var(--danger)">●</span> عالية
+                        </button>
+                        <button class="filter-btn" onclick="setPriorityFilter('medium')">
+                            <span style="color: var(--warning)">●</span> متوسطة
+                        </button>
+                        <button class="filter-btn" onclick="setPriorityFilter('low')">
+                            <span style="color: var(--success)">●</span> منخفضة
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="stat-item">
-                <div class="stat-number" id="completedTasks">0</div>
-                <div>المكتملة</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="pendingTasks">0</div>
-                <div>المعلقة</div>
+
+            <!-- المحتوى -->
+            <div class="content">
+                <!-- نموذج إضافة مهمة -->
+                <div class="add-task-form">
+                    <h3><i class="fas fa-plus"></i> إضافة مهمة جديدة</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="taskTitle">عنوان المهمة</label>
+                            <input type="text" id="taskTitle" placeholder="ماذا تريد أن تفعل؟">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="taskDueDate">تاريخ التسليم</label>
+                            <input type="date" id="taskDueDate">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="taskPriority">الأولوية</label>
+                            <select id="taskPriority">
+                                <option value="low">منخفضة</option>
+                                <option value="medium">متوسطة</option>
+                                <option value="high">عالية</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="taskCategory">الفئة</label>
+                            <select id="taskCategory">
+                                <option value="">بدون فئة</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label for="taskDescription">الوصف (اختياري)</label>
+                            <textarea id="taskDescription" rows="2" placeholder="وصف تفصيلي للمهمة..."></textarea>
+                        </div>
+                        
+                        <div class="form-group" style="grid-column: 1 / -1; text-align: left;">
+                            <button class="btn btn-primary" onclick="addTask()">
+                                <i class="fas fa-plus"></i> إضافة المهمة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قائمة المهام -->
+                <div id="todosContainer">
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <h3>لا توجد مهام حالياً</h3>
+                        <p>ابدأ بإضافة مهمة جديدة باستخدام النموذج أعلاه</p>
+                    </div>
+                </div>
+
+                <!-- الإحصائيات -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number stat-total" id="statTotal">0</div>
+                        <div>المهام الكلية</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number stat-completed" id="statCompleted">0</div>
+                        <div>مكتملة</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number stat-pending" id="statPending">0</div>
+                        <div>معلقة</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number stat-overdue" id="statOverdue">0</div>
+                        <div>متأخرة</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // 🔥 بيانات Supabase - من مشروعك
+        // 🔥 بيانات Supabase
         const supabaseUrl = 'https://zvxnihydqpcabeozdpel.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2eG5paHlkcXBjYWJlb3pkcGVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM1MTM0MjksImV4cCI6MjA3OTA4OTQyOX0.Ri8lTJWYGwjb-4GB7ehpD0FR3S6MXRchqnomZbmMnD0';
         
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // 🔄 جلب جميع المهام
-        async function loadTasks() {
-            const { data: todos, error } = await supabase
-                .from('todos')
-                .select('*')
-                .order('created_at', { ascending: false });
+        // حالة التطبيق
+        let currentState = {
+            filter: 'all',
+            priorityFilter: 'all',
+            currentCategory: null,
+            todos: [],
+            categories: []
+        };
 
-            if (error) {
-                console.error('Error:', error);
-                return;
-            }
-
-            displayTasks(todos);
-            updateStats(todos);
+        // 🚀 تهيئة التطبيق
+        async function initApp() {
+            await loadCategories();
+            await loadTodos();
+            setupEventListeners();
         }
 
-        // 🎯 عرض المهام في الصفحة
-        function displayTasks(todos) {
-            const todosList = document.getElementById('todosList');
-            
-            if (todos.length === 0) {
-                todosList.innerHTML = '<div class="empty-state">🚀 ابدأ بإضافة مهمة جديدة!</div>';
-                return;
-            }
+        // 📂 تحميل الفئات
+        async function loadCategories() {
+            const { data, error } = await supabase
+                .from('categories')
+                .select('*')
+                .order('name');
 
-            todosList.innerHTML = '';
+            if (!error) {
+                currentState.categories = data;
+                displayCategories();
+            }
+        }
+
+        // 📝 تحميل المهام
+        async function loadTodos() {
+            let query = supabase
+                .from('todos')
+                .select(`
+                    *,
+                    categories (name, color)
+                `)
+                .order('created_at', { ascending: false });
+
+            const { data, error } = await query;
+
+            if (!error) {
+                currentState.todos = data;
+                displayTodos();
+                updateStats();
+            }
+        }
+
+        // 🎯 عرض الفئات
+        function displayCategories() {
+            const categoryList = document.getElementById('categoryList');
+            const categorySelect = document.getElementById('taskCategory');
             
-            todos.forEach(todo => {
-                const todoElement = document.createElement('div');
-                todoElement.className = `todo-item ${todo.is_completed ? 'completed' : ''}`;
-                
-                todoElement.innerHTML = `
-                    <div style="flex: 1;">
-                        <div style="font-size: 18px; margin-bottom: 5px;">${todo.task}</div>
-                        <div style="font-size: 12px; color: #666;">تم الإنشاء: ${new Date(todo.created_at).toLocaleString('ar-EG')}</div>
-                    </div>
-                    <div class="todo-actions">
-                        <button class="btn-${todo.is_completed ? 'secondary' : 'success'}" onclick="toggleTask(${todo.id}, ${!todo.is_completed})">
-                            ${todo.is_completed ? '↶ إلغاء' : '✓ إكمال'}
-                        </button>
-                        <button class="btn-danger" onclick="deleteTask(${todo.id})">🗑️ حذف</button>
-                    </div>
+            categoryList.innerHTML = '';
+            categorySelect.innerHTML = '<option value="">بدون فئة</option>';
+
+            currentState.categories.forEach(category => {
+                // للقائمة
+                categoryList.innerHTML += `
+                    <button class="category-btn" onclick="setCategoryFilter(${category.id})">
+                        ${category.name}
+                        <span class="category-color" style="background: ${category.color || '#667eea'}"></span>
+                    </button>
                 `;
-                
-                todosList.appendChild(todoElement);
+
+                // للاختيار
+                categorySelect.innerHTML += `
+                    <option value="${category.id}">${category.name}</option>
+                `;
             });
         }
 
-        // 📊 تحديث الإحصائيات
-        function updateStats(todos) {
-            const total = todos.length;
-            const completed = todos.filter(todo => todo.is_completed).length;
-            const pending = total - completed;
+        // 📋 عرض المهام
+        function displayTodos() {
+            const container = document.getElementById('todosContainer');
+            let filteredTodos = filterTodos(currentState.todos);
 
-            document.getElementById('totalTasks').textContent = total;
-            document.getElementById('completedTasks').textContent = completed;
-            document.getElementById('pendingTasks').textContent = pending;
+            if (filteredTodos.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <h3>لا توجد مهام</h3>
+                        <p>حاول تغيير عوامل التصفية أو أضف مهام جديدة</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+
+            filteredTodos.forEach(todo => {
+                const isOverdue = todo.due_date && new Date(todo.due_date) < new Date();
+                
+                container.innerHTML += `
+                    <div class="todo-item ${todo.is_completed ? 'completed' : ''} ${isOverdue && !todo.is_completed ? 'overdue' : ''}">
+                        <div class="todo-checkbox ${todo.is_completed ? 'checked' : ''}" 
+                             onclick="toggleTask(${todo.id}, ${!todo.is_completed})">
+                            ${todo.is_completed ? '✓' : ''}
+                        </div>
+                        
+                        <div class="todo-content">
+                            <div class="todo-title">${todo.task}</div>
+                            <div class="todo-meta">
+                                ${todo.due_date ? `
+                                    <span><i class="far fa-calendar"></i> ${formatDate(todo.due_date)}</span>
+                                ` : ''}
+                                
+                                <span class="todo-badge badge-priority-${todo.priority || 'low'}">
+                                    <i class="fas fa-flag"></i> ${getPriorityText(todo.priority)}
+                                </span>
+                                
+                                ${todo.categories ? `
+                                    <span class="todo-badge badge-category">
+                                        <i class="fas fa-tag"></i> ${todo.categories.name}
+                                    </span>
+                                ` : ''}
+                                
+                                ${isOverdue && !todo.is_completed ? `
+                                    <span class="todo-badge overdue-badge">
+                                        <i class="fas fa-exclamation-triangle"></i> متأخرة
+                                    </span>
+                                ` : ''}
+                            </div>
+                            
+                            ${todo.description ? `
+                                <div style="margin-top: 10px; color: #666; font-size: 0.9em;">
+                                    ${todo.description}
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="todo-actions">
+                            <button class="btn-icon btn-edit" onclick="editTask(${todo.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon btn-delete" onclick="deleteTask(${todo.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // 🔍 تصفية المهام
+        function filterTodos(todos) {
+            let filtered = [...todos];
+
+            // التصفية حسب الحالة
+            if (currentState.filter === 'completed') {
+                filtered = filtered.filter(todo => todo.is_completed);
+            } else if (currentState.filter === 'pending') {
+                filtered = filtered.filter(todo => !todo.is_completed);
+            } else if (currentState.filter === 'overdue') {
+                filtered = filtered.filter(todo => 
+                    todo.due_date && 
+                    new Date(todo.due_date) < new Date() && 
+                    !todo.is_completed
+                );
+            }
+
+            // التصفية حسب الأولوية
+            if (currentState.priorityFilter !== 'all') {
+                filtered = filtered.filter(todo => todo.priority === currentState.priorityFilter);
+            }
+
+            // التصفية حسب الفئة
+            if (currentState.currentCategory) {
+                filtered = filtered.filter(todo => todo.category_id === currentState.currentCategory);
+            }
+
+            return filtered;
         }
 
         // ➕ إضافة مهمة جديدة
         async function addTask() {
-            const taskInput = document.getElementById('taskInput');
-            const task = taskInput.value.trim();
+            const title = document.getElementById('taskTitle').value.trim();
+            const dueDate = document.getElementById('taskDueDate').value;
+            const priority = document.getElementById('taskPriority').value;
+            const categoryId = document.getElementById('taskCategory').value;
+            const description = document.getElementById('taskDescription').value.trim();
 
-            if (!task) {
-                alert('⚠️ من فضلك اكتب المهمة أولاً!');
+            if (!title) {
+                alert('⚠️ من فضلك أدخل عنوان المهمة');
                 return;
             }
+
+            const taskData = {
+                task: title,
+                priority: priority,
+                description: description,
+                due_date: dueDate || null,
+                category_id: categoryId || null
+            };
 
             const { error } = await supabase
                 .from('todos')
-                .insert([{ task: task }]);
+                .insert([taskData]);
 
             if (error) {
                 console.error('Error:', error);
-                alert('❌ حدث خطأ في إضافة المهمة: ' + error.message);
+                alert('❌ حدث خطأ في إضافة المهمة');
                 return;
             }
 
-            taskInput.value = '';
-            loadTasks();
+            // مسح النموذج
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDueDate').value = '';
+            document.getElementById('taskPriority').value = 'low';
+            document.getElementById('taskCategory').value = '';
+            document.getElementById('taskDescription').value = '';
+
+            await loadTodos();
+            alert('✅ تم إضافة المهمة بنجاح!');
         }
 
         // ✅ ❌ تبديل حالة المهمة
@@ -255,10 +708,26 @@
                 return;
             }
 
-            loadTasks();
+            await loadTodos();
         }
 
-        // 🗑️ حذف مهمة
+        // ✏️ تعديل المهمة
+        async function editTask(id) {
+            const todo = currentState.todos.find(t => t.id === id);
+            if (!todo) return;
+
+            const newTitle = prompt('عدل عنوان المهمة:', todo.task);
+            if (newTitle && newTitle !== todo.task) {
+                const { error } = await supabase
+                    .from('todos')
+                    .update({ task: newTitle })
+                    .eq('id', id);
+
+                if (!error) await loadTodos();
+            }
+        }
+
+        // 🗑️ حذف المهمة
         async function deleteTask(id) {
             if (!confirm('⚠️ هل أنت متأكد من حذف هذه المهمة؟')) return;
 
@@ -272,21 +741,73 @@
                 return;
             }
 
-            loadTasks();
+            await loadTodos();
         }
 
-        // ⚡ تحميل المهام عند فتح الصفحة
-        loadTasks();
+        // 📊 تحديث الإحصائيات
+        function updateStats() {
+            const total = currentState.todos.length;
+            const completed = currentState.todos.filter(t => t.is_completed).length;
+            const pending = total - completed;
+            const overdue = currentState.todos.filter(t => 
+                t.due_date && 
+                new Date(t.due_date) < new Date() && 
+                !t.is_completed
+            ).length;
 
-        // 🔊 إضافة إمكانية الإدخال بالزر Enter
-        document.getElementById('taskInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                addTask();
-            }
-        });
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statCompleted').textContent = completed;
+            document.getElementById('statPending').textContent = pending;
+            document.getElementById('statOverdue').textContent = overdue;
 
-        // 🎯 تحديث تلقائي كل 10 ثواني
-        setInterval(loadTasks, 10000);
+            // تحديث إحصائيات المستخدم
+            document.getElementById('userStats').textContent = `${total} مهام`;
+        }
+
+        // 🎛️ دوال التصفية
+        function setFilter(filter) {
+            currentState.filter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            displayTodos();
+        }
+
+        function setPriorityFilter(priority) {
+            currentState.priorityFilter = priority;
+            displayTodos();
+        }
+
+        function setCategoryFilter(categoryId) {
+            currentState.currentCategory = currentState.currentCategory === categoryId ? null : categoryId;
+            displayTodos();
+        }
+
+        // 🛠️ دوال مساعدة
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('ar-EG');
+        }
+
+        function getPriorityText(priority) {
+            const priorities = {
+                'low': 'منخفضة',
+                'medium': 'متوسطة', 
+                'high': 'عالية'
+            };
+            return priorities[priority] || 'منخفضة';
+        }
+
+        function setupEventListeners() {
+            // الإدخال بالزر Enter
+            document.getElementById('taskTitle').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addTask();
+            });
+        }
+
+        // 🚀 تشغيل التطبيق
+        initApp();
+
+        // 🔄 تحديث تلقائي كل 30 ثانية
+        setInterval(loadTodos, 30000);
     </script>
 </body>
-                </html>
+                            </html>
