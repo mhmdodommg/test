@@ -803,11 +803,48 @@
             });
         }
 
+        // دالة فحص الاتصال
+async function testConnection() {
+    const resultDiv = document.getElementById('testResult');
+    resultDiv.innerHTML = '🔄 جاري الفحص...';
+    
+    try {
+        // فحص جدول todos
+        const { data: todos, error: todosError } = await supabase
+            .from('todos')
+            .select('*');
+        
+        // فحص جدول categories
+        const { data: categories, error: categoriesError } = await supabase
+            .from('categories')
+            .select('*');
+        
+        if (todosError || categoriesError) {
+            resultDiv.innerHTML = '❌ خطأ في الاتصال: ' + (todosError?.message || categoriesError?.message);
+            return;
+        }
+        
+        resultDiv.innerHTML = `✅ الاتصال ناجح!<br>
+        📊 عدد المهام: ${todos.length}<br>
+        📂 عدد الفئات: ${categories.length}`;
+        
+    } catch (error) {
+        resultDiv.innerHTML = '❌ خطأ: ' + error.message;
+    }
+        }
+        
         // 🚀 تشغيل التطبيق
         initApp();
 
         // 🔄 تحديث تلقائي كل 30 ثانية
         setInterval(loadTodos, 30000);
     </script>
+    <!-- ضف هذا في الـ header أو في مكان واضح -->
+<div style="text-align: center; padding: 10px; background: #ffeb3b;">
+    <button onclick="testConnection()" style="padding: 10px 20px; font-size: 16px;">
+        🔍 فحص الاتصال بقاعدة البيانات
+    </button>
+    <div id="testResult" style="margin-top: 10px; font-weight: bold;"></div>
+</div>
 </body>
                             </html>
