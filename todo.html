@@ -832,6 +832,31 @@ async function testConnection() {
         resultDiv.innerHTML = '❌ خطأ: ' + error.message;
     }
         }
+
+        // دالة عرض جميع المهام
+function showAllTasks() {
+    const container = document.getElementById('allTasks');
+    
+    if (currentState.todos.length === 0) {
+        container.innerHTML = '📭 لا توجد مهام في الذاكرة';
+        return;
+    }
+    
+    let html = `<h3>📋 جميع المهام (${currentState.todos.length})</h3>`;
+    
+    currentState.todos.forEach(todo => {
+        html += `
+            <div style="border: 1px solid #ddd; margin: 10px; padding: 10px; border-radius: 5px;">
+                <strong>${todo.task}</strong><br>
+                📍 الأولوية: ${todo.priority || 'غير محدد'}<br>
+                ✅ الحالة: ${todo.is_completed ? 'مكتملة' : 'غير مكتملة'}<br>
+                ${todo.category_id ? `🏷️ الفئة: ${todo.category_id}` : ''}
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+               }
         
         // 🚀 تشغيل التطبيق
         initApp();
@@ -845,6 +870,13 @@ async function testConnection() {
         🔍 فحص الاتصال بقاعدة البيانات
     </button>
     <div id="testResult" style="margin-top: 10px; font-weight: bold;"></div>
+</div>
+    <!-- ضفه تحت زر فحص الاتصال -->
+<div style="text-align: center; padding: 10px; background: #e3f2fd;">
+    <button onclick="showAllTasks()" style="padding: 10px 20px; font-size: 16px; background: #2196f3; color: white; border: none; border-radius: 5px;">
+        👁️ عرض جميع المهام
+    </button>
+    <div id="allTasks" style="margin-top: 10px; text-align: right;"></div>
 </div>
 </body>
                             </html>
